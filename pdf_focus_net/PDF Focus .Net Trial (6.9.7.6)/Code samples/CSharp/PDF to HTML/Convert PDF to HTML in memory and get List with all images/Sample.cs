@@ -1,0 +1,114 @@
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Drawing;
+
+namespace Sample
+{
+    class Sample
+    {
+        static void Main(string[] args)
+        {
+            ConvertPdfBytesToHtml();
+            //ConvertPdfStreamToHtml();
+        }
+
+        private static void ConvertPdfBytesToHtml()
+        {
+            string pathToPdf = @"..\..\..\..\..\simple text.pdf";
+            string pathToHtml = Path.ChangeExtension(pathToPdf, ".htm");
+            
+            // This list will be filled by images after the PDF to HTML conversion.
+            List<Image> imgCollection = new List<Image>();
+
+            // Convert PDF to HTML in memory
+            SautinSoft.PdfFocus f = new SautinSoft.PdfFocus();
+            // Let's force the component to store images inside HTML document
+            // using base-64 encoding.
+            // Thus the component will not use HDD.
+            f.HtmlOptions.IncludeImageInHtml = true;
+            f.HtmlOptions.Title = "Simple text";
+            f.HtmlOptions.InlineCSS = true;
+
+            // This property is necessary only for registered version
+            //f.Serial = "XXXXXXXXXXX";
+
+            // Read a PDF document to byte array
+            // Assume that we already had PDF as bytes array before converting.
+            byte[] pdf = File.ReadAllBytes(pathToPdf);
+
+            f.OpenPdf(pdf);
+
+            if (f.PageCount > 0)
+            {
+                // Convert PDF to HTML in memory
+                string html = f.ToHtml(1, f.PageCount, imgCollection);
+
+                // Save HTML to a file only for demonstration purpose.
+                if (html != null)
+                {
+                    // Show info about images.
+                    Console.WriteLine("After converting we've got {0} image(s):", imgCollection.Count);
+                    foreach (Image img in imgCollection)
+                        Console.WriteLine("\t {0,4} x {1,4} px", img.Width, img.Height);
+
+                    Console.WriteLine("Press any key ...");
+                    Console.ReadLine();
+
+                    File.WriteAllText(pathToHtml, html);
+                    System.Diagnostics.Process.Start(pathToHtml);
+                }
+            }
+        }
+        private static void ConvertPdfStreamToHtml()
+        {
+            string pathToPdf = @"..\..\..\..\..\simple text.pdf";
+            string pathToHtml = Path.ChangeExtension(pathToPdf, ".htm");
+
+            // This list will be filled by images after the PDF to HTML conversion.
+            List<Image> imgCollection = new List<Image>();
+
+            // Convert PDF to HTML in memory
+            SautinSoft.PdfFocus f = new SautinSoft.PdfFocus();
+            // Let's force the component to store images inside HTML document
+            // using base-64 encoding.
+            // Thus the component will not use HDD.
+            f.HtmlOptions.IncludeImageInHtml = true;
+            f.HtmlOptions.Title = "Simple text";
+            f.HtmlOptions.InlineCSS = true;
+
+            // This property is necessary only for registered version
+            //f.Serial = "XXXXXXXXXXX";
+
+            // Read a PDF document to byte array
+            // Assume that we have a PDF document as Stream.
+
+            using (FileStream fs = File.OpenRead(pathToPdf))
+            {
+                f.OpenPdf(fs);
+
+                if (f.PageCount > 0)
+                {
+                    // Convert PDF to HTML string.
+                    string html = f.ToHtml(1, f.PageCount, imgCollection);
+
+                    // Show info about images.
+                    Console.WriteLine("After converting we've got {0} image(s):", imgCollection.Count);
+                    foreach (Image img in imgCollection)
+                        Console.WriteLine("\t {0,4} x {1,4} px", img.Width, img.Height);
+
+                    Console.WriteLine("Press any key ...");
+                    Console.ReadLine();
+
+                    // Save HTML to a file only for demonstration purposes.
+                    if (html != null)
+                    {
+                        File.WriteAllText(pathToHtml, html);
+                        System.Diagnostics.Process.Start(pathToHtml);
+                    }
+                }
+            }
+        }
+
+    }
+}
